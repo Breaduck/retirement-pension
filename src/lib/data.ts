@@ -31,8 +31,11 @@ export interface ProductSummary {
   daily_change_pct?: number;
   return_1m?: number;
   return_3m?: number;
+  return_6m?: number;
   return_1y?: number;
   return_3y?: number;
+  return_since?: number;
+  risk_level?: string;
   ma200_pos_pct?: number; // 현재가 / 200일이평선 - 1
   rsi14?: number;
   price_percentile_1y?: number; // 0~100

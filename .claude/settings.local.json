@@ -19,7 +19,19 @@
       "Bash(python scripts/extract_pdf.py)",
       "PowerShell(python -m pip install pymupdf --quiet 2>&1 | Select-Object -Last 2)",
       "Bash(python scripts/pdf_to_png.py)",
-      "PowerShell(Add-Type -AssemblyName System.Drawing; $img = [System.Drawing.Image]::FromFile\\(\"C:\\\\Users\\\\hiyoo\\\\코딩\\\\money\\\\.tmp_pdf_pages\\\\fund_p01.png\"\\); Write-Output \\(\"{0}x{1}\" -f $img.Width, $img.Height\\); $img.Dispose\\(\\))"
+      "PowerShell(Add-Type -AssemblyName System.Drawing; $img = [System.Drawing.Image]::FromFile\\(\"C:\\\\Users\\\\hiyoo\\\\코딩\\\\money\\\\.tmp_pdf_pages\\\\fund_p01.png\"\\); Write-Output \\(\"{0}x{1}\" -f $img.Width, $img.Height\\); $img.Dispose\\(\\))",
+      "WebFetch(domain:wikidocs.net)",
+      "Bash(Get-Item \"C:\\\\Users\\\\hiyoo\\\\.claude\\\\projects\\\\C--Users-hiyoo----money\\\\cf505d52-1322-47d8-9835-ef3507f5b7f9.jsonl\")",
+      "Bash(Select-Object Length)",
+      "Bash(python3 -c ' *)",
+      "Bash(python3 *)",
+      "Read(//tmp/**)",
+      "Read(//c/tmp/**)",
+      "Bash(python parse_funds.py)",
+      "Bash(python -c ' *)",
+      "Bash(python parse_funds2.py)",
+      "PowerShell(\\(Get-Content \"C:\\\\Users\\\\hiyoo\\\\.claude\\\\projects\\\\C--Users-hiyoo----money\\\\cf505d52-1322-47d8-9835-ef3507f5b7f9.jsonl\" | Measure-Object -Line\\).Lines)",
+      "PowerShell(head *)"
     ]
   }
 }
