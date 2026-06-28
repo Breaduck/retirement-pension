@@ -4,6 +4,7 @@ import Product from "./routes/Product";
 import Watch from "./routes/Watch";
 import Portfolio from "./routes/Portfolio";
 import TopNav from "./components/TopNav";
+import IconRail from "./components/IconRail";
 
 export default function App() {
   const location = useLocation();
@@ -12,15 +13,22 @@ export default function App() {
   return (
     <div className="min-h-full flex flex-col bg-toss-bg">
       <TopNav />
-      <main className={isDetail ? "" : "container-wide py-8"}>
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/s/:id" element={<Product />} />
-          <Route path="/watch" element={<Watch />} />
-          <Route path="/me" element={<Portfolio />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </main>
+      <div className="flex flex-1">
+        <div className="flex-1 min-w-0">
+          <main className={isDetail ? "" : "container-wide py-6"}>
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/s/:id" element={<Product />} />
+              <Route path="/watch" element={<Watch />} />
+              <Route path="/me" element={<Portfolio />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </main>
+        </div>
+        <aside className="hidden lg:block w-14 border-l border-toss-border bg-white flex-shrink-0">
+          <IconRail />
+        </aside>
+      </div>
       <footer className="border-t border-toss-border bg-white mt-16">
         <div className="container-wide py-8 text-[12px] text-toss-text-tertiary leading-relaxed">
           이 사이트는 투자 판단 참고용이며 매수 추천이 아닙니다. 실제 매매는 신한투자증권 MTS에서 본인 판단으로 진행하세요.

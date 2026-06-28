@@ -195,4 +195,126 @@
   /* 스크롤바 숨김 */
   .scrollbar-none::-webkit-scrollbar { display: none; }
   .scrollbar-none { scrollbar-width: none; }
+
+  /* ── 프로모 배너 ── */
+  .banner-promo {
+    @apply flex items-center justify-center gap-3 h-11 rounded-xl bg-toss-divider;
+    @apply text-[13px] text-toss-text-secondary;
+  }
+  .banner-promo .promo-cta {
+    @apply text-[13px] font-bold text-toss-text-primary;
+    @apply hover:underline cursor-pointer;
+  }
+  .banner-promo .promo-close {
+    @apply ml-2 text-toss-text-tertiary cursor-pointer;
+    @apply hover:text-toss-text-secondary;
+  }
+
+  /* ── 시장 개요 카드 ── */
+  .market-card {
+    @apply card p-4 flex flex-col gap-1.5;
+    min-height: 96px;
+  }
+  .market-card-big {
+    @apply card p-5 flex flex-col gap-2;
+    min-height: 200px;
+  }
+  .market-card-text {
+    @apply card p-4 flex flex-col justify-between;
+    min-height: 96px;
+  }
+  .market-card-title {
+    @apply text-[12px] font-medium text-toss-text-tertiary;
+  }
+  .market-card-num {
+    @apply text-[20px] font-bold tabular-nums text-toss-text-primary tracking-tight;
+  }
+  .market-card-big .market-card-num {
+    @apply text-[28px];
+  }
+  .market-card-delta {
+    @apply text-[12px] font-semibold tabular-nums;
+  }
+
+  /* ── 탭 네비 (밑줄 indicator) ── */
+  .tab-nav {
+    @apply flex items-center gap-7 border-b border-toss-border;
+  }
+  .tab-item {
+    @apply relative h-11 flex items-center;
+    @apply text-[15px] font-semibold text-toss-text-tertiary cursor-pointer;
+    @apply hover:text-toss-text-secondary transition-colors;
+  }
+  .tab-item.active {
+    @apply text-toss-text-primary;
+  }
+  .tab-item.active::after {
+    content: "";
+    @apply absolute left-0 right-0 bottom-[-1px] h-[2px] bg-toss-text-primary;
+  }
+
+  /* ── 토글 그룹 (전체/국내/해외) ── */
+  .toggle-group {
+    @apply inline-flex p-1 rounded-xl bg-toss-divider;
+  }
+  .toggle-btn {
+    @apply h-8 px-4 rounded-lg text-[13px] font-semibold;
+    @apply text-toss-text-secondary cursor-pointer transition-colors;
+  }
+  .toggle-btn.active {
+    @apply bg-white text-toss-text-primary shadow-sm;
+  }
+
+  /* ── 필터 칩 (작은 사이즈) ── */
+  .chip-sm {
+    @apply inline-flex items-center px-3 h-8 rounded-lg;
+    @apply text-[13px] font-semibold whitespace-nowrap;
+    @apply bg-white border border-toss-border text-toss-text-secondary;
+    @apply cursor-pointer select-none transition-colors;
+    @apply hover:bg-toss-divider;
+  }
+  .chip-sm.active {
+    @apply bg-toss-blue-light border-toss-blue text-toss-blue;
+  }
+
+  /* ── 펀드 리스트 행 ── */
+  .fund-row {
+    @apply grid items-center gap-3 px-3 h-14;
+    @apply border-b border-toss-divider cursor-pointer;
+    @apply hover:bg-toss-divider/40 transition-colors;
+    grid-template-columns: 24px 24px 36px 1fr 90px 80px;
+  }
+  .fund-row.selected {
+    @apply bg-toss-blue-light/40;
+  }
+  .fund-logo {
+    @apply w-9 h-9 rounded-full flex items-center justify-center;
+    @apply text-white text-[13px] font-bold;
+  }
+
+  /* ── 우측 세로 아이콘 레일 ── */
+  .icon-rail {
+    @apply sticky top-16 flex flex-col items-center gap-1 py-4 self-start;
+    width: 56px;
+  }
+  .icon-rail-item {
+    @apply w-12 h-14 flex flex-col items-center justify-center gap-1 rounded-xl;
+    @apply text-toss-text-tertiary cursor-pointer transition-colors;
+    @apply hover:bg-toss-divider hover:text-toss-text-primary;
+  }
+  .icon-rail-item.active {
+    @apply text-toss-text-primary bg-toss-divider;
+  }
+  .icon-rail-label {
+    @apply text-[10px] font-semibold;
+  }
+
+  /* ── 와치리스트 행 ── */
+  .watch-row {
+    @apply flex items-center gap-3 px-3 py-2.5 cursor-pointer;
+    @apply hover:bg-toss-divider/40 transition-colors;
+  }
+  .watch-row.selected {
+    @apply bg-toss-blue-light/40;
+  }
 }

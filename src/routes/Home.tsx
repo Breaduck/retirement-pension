@@ -1,241 +1,360 @@
-import { useState, useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { loadProducts, ProductSummary, Category, CATEGORY_LABEL } from "../lib/data";
-import { formatPercent, colorForChange } from "../lib/format";
+import {
+  loadProducts,
+  type ProductSummary,
+  type Category,
+  CATEGORY_LABEL,
+} from "@/lib/data";
+import { formatPercent, colorForChange } from "@/lib/format";
+import { getWatchlist, toggleWatchlist } from "@/lib/watchlist";
+import MarketOverview from "@/components/MarketOverview";
+import TabNav, { type TabKey } from "@/components/TabNav";
+import FundDetailPreview from "@/components/FundDetailPreview";
+import WatchlistPanel from "@/components/WatchlistPanel";
 
-const CHIPS: Array<{ value: Category | "all"; label: string }> = [
-  { value: "all", label: "전체" },
-  { value: "us_stock", label: "미국주식" },
-  { value: "kr_stock", label: "한국주식" },
-  { value: "global_stock", label: "글로벌주식" },
-  { value: "tdf", label: "TDF" },
-  { value: "bond", label: "채권" },
-  { value: "reit_infra", label: "리츠/인프라" },
-  { value: "commodity", label: "원자재" },
-  { value: "principal_guaranteed", label: "원리금보장" },
+type Region = "all" | "kr" | "global";
+type SortKey = "return_1y" | "return_3y" | "return_6m" | "expense_ratio" | "aum";
+
+const SORT_CHIPS: Array<{ key: SortKey; label: string; desc: boolean }> = [
+  { key: "return_1y",     label: "1년 수익률",  desc: true  },
+  { key: "return_3y",     label: "3년 수익률",  desc: true  },
+  { key: "return_6m",     label: "6개월 수익률", desc: true  },
+  { key: "expense_ratio", label: "보수 낮은순", desc: false },
+  { key: "aum",           label: "AUM 큰순",     desc: true  },
 ];
 
-type SortKey = "return_1y" | "return_3y" | "expense_ratio" | "name";
+const CATEGORY_CHIPS: Array<{ key: Category | "all"; label: string }> = [
+  { key: "all",                  label: "전체" },
+  { key: "us_stock",             label: "미국주식" },
+  { key: "kr_stock",             label: "한국주식" },
+  { key: "global_stock",         label: "글로벌주식" },
+  { key: "bond",                 label: "채권" },
+  { key: "tdf",                  label: "TDF" },
+  { key: "reit_infra",           label: "리츠/인프라" },
+];
+
+const RISK_CHIPS: Array<{ key: string; label: string }> = [
+  { key: "all",        label: "전체" },
+  { key: "매우높은위험", label: "매우 높음" },
+  { key: "높은위험",     label: "높음" },
+  { key: "다소높은위험", label: "다소 높음" },
+  { key: "보통위험",     label: "보통" },
+  { key: "낮은위험",     label: "낮음" },
+];
+
+const CAT_COLOR: Record<string, string> = {
+  us_stock:             "bg-red-500",
+  kr_stock:             "bg-rose-500",
+  global_stock:         "bg-toss-blue",
+  bond:                 "bg-emerald-500",
+  reit_infra:           "bg-amber-500",
+  commodity:            "bg-yellow-500",
+  tdf:                  "bg-purple-500",
+  principal_guaranteed: "bg-toss-text-tertiary",
+};
+
+const REGION_MAP: Record<Region, Category[] | null> = {
+  all:    null,
+  kr:     ["kr_stock"],
+  global: ["us_stock", "global_stock"],
+};
 
 export default function Home() {
-  const [products, setProducts] = useState<ProductSummary[]>([]);
-  const [updatedAt, setUpdatedAt] = useState<string | null>(null);
-  const [category, setCategory] = useState<Category | "all">("all");
-  const [sortBy, setSortBy] = useState<SortKey>("return_1y");
-  const [sortDesc, setSortDesc] = useState(true);
   const navigate = useNavigate();
+  const [products,    setProducts]    = useState<ProductSummary[]>([]);
+  const [updatedAt,   setUpdatedAt]   = useState<string | null>(null);
+  const [tab,         setTab]         = useState<TabKey>("realtime");
+  const [region,      setRegion]      = useState<Region>("all");
+  const [sortBy,      setSortBy]      = useState<SortKey>("return_1y");
+  const [categoryF,   setCategoryF]   = useState<Category | "all">("all");
+  const [riskF,       setRiskF]       = useState<string>("all");
+  const [hideHighRisk,setHideHighRisk]= useState(false);
+  const [selectedId,  setSelectedId]  = useState<string | null>(null);
+  const [bannerOpen,  setBannerOpen]  = useState(true);
+  const [watchIds,    setWatchIds]    = useState<string[]>([]);
 
   useEffect(() => {
-    loadProducts().then((p) => {
-      setProducts(p.products);
-      setUpdatedAt(p.updated_at);
+    loadProducts().then((pf) => {
+      setProducts(pf.products);
+      setUpdatedAt(pf.updated_at);
+      setWatchIds(getWatchlist());
+      if (pf.products.length > 0) {
+        const top = [...pf.products]
+          .filter((p) => p.return_1y != null)
+          .sort((a, b) => (b.return_1y ?? 0) - (a.return_1y ?? 0))[0];
+        if (top) setSelectedId(top.id);
+      }
     });
   }, []);
 
-  const filtered = useMemo(
-    () => (category === "all" ? products : products.filter((p) => p.category === category)),
-    [products, category]
-  );
+  const filtered = useMemo(() => {
+    let list = products;
+
+    // Region filter
+    const cats = REGION_MAP[region];
+    if (cats) list = list.filter((p) => cats.includes(p.category));
+
+    // Tab-specific extra filter
+    if (tab === "category" && categoryF !== "all") {
+      list = list.filter((p) => p.category === categoryF);
+    }
+    if (tab === "risk" && riskF !== "all") {
+      list = list.filter((p) => p.risk_level === riskF);
+    }
+
+    // High-risk hide
+    if (hideHighRisk) {
+      list = list.filter((p) => p.risk_level !== "매우높은위험");
+    }
+
+    return list;
+  }, [products, region, tab, categoryF, riskF, hideHighRisk]);
 
   const sorted = useMemo(() => {
-    const arr = [...filtered];
-    arr.sort((a, b) => {
-      let av: any, bv: any;
-      if (sortBy === "name") {
-        av = a.nickname || a.name; bv = b.nickname || b.name;
-        return sortDesc ? bv.localeCompare(av) : av.localeCompare(bv);
-      }
-      av = (a as any)[sortBy] ?? -Infinity;
-      bv = (b as any)[sortBy] ?? -Infinity;
-      return sortDesc ? bv - av : av - bv;
+    const chip = SORT_CHIPS.find((c) => c.key === sortBy)!;
+    return [...filtered].sort((a, b) => {
+      const av = (a as any)[sortBy];
+      const bv = (b as any)[sortBy];
+      if (av == null && bv == null) return 0;
+      if (av == null) return 1;
+      if (bv == null) return -1;
+      return chip.desc ? bv - av : av - bv;
     });
-    return arr;
-  }, [filtered, sortBy, sortDesc]);
+  }, [filtered, sortBy]);
 
-  const featured = useMemo(
-    () => products
-      .filter((p) => p.return_1y != null)
-      .sort((a, b) => (b.return_1y ?? 0) - (a.return_1y ?? 0))
-      .slice(0, 3),
-    [products]
+  const selected = useMemo(
+    () => products.find((p) => p.id === selectedId) ?? null,
+    [products, selectedId]
   );
 
-  const safeBondTop = useMemo(
-    () => products
-      .filter((p) => p.category === "bond" && p.return_1y != null)
-      .sort((a, b) => (b.return_1y ?? 0) - (a.return_1y ?? 0))
-      .slice(0, 5),
-    [products]
-  );
+  const baseDate = updatedAt ? new Date(updatedAt) : null;
+  const dateLabel = baseDate
+    ? `${baseDate.getFullYear()}.${String(baseDate.getMonth() + 1).padStart(2, "0")}.${String(baseDate.getDate()).padStart(2, "0")}`
+    : "—";
 
-  const tdfTop = useMemo(
-    () => products
-      .filter((p) => p.category === "tdf" && p.return_1y != null)
-      .sort((a, b) => (b.return_1y ?? 0) - (a.return_1y ?? 0))
-      .slice(0, 5),
-    [products]
-  );
-
-  const fmtDate = (iso: string) => {
-    const d = new Date(iso);
-    return isNaN(d.getTime()) ? "" : `${d.getMonth() + 1}월 ${d.getDate()}일 기준`;
-  };
-
-  const handleSort = (key: SortKey) => {
-    if (sortBy === key) setSortDesc(!sortDesc);
-    else { setSortBy(key); setSortDesc(true); }
+  const handleHeart = (e: React.MouseEvent, id: string) => {
+    e.stopPropagation();
+    toggleWatchlist(id);
+    setWatchIds(getWatchlist());
   };
 
   return (
-    <div>
-      {/* 페이지 헤더 */}
-      <div className="flex items-end justify-between mb-6">
-        <div>
-          <h1 className="page-title">신한투자증권 퇴직연금</h1>
-          <p className="page-subtitle">
-            실적배당상품 {products.length}개 · {updatedAt && fmtDate(updatedAt)}
-          </p>
+    <div className="flex flex-col gap-6">
+      {/* ── Promo banner ── */}
+      {bannerOpen && (
+        <div className="banner-promo">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <circle cx="12" cy="12" r="10" />
+            <path d="M12 8v4M12 16h.01" />
+          </svg>
+          <span>퇴직연금 펀드 153개 · {dateLabel} 기준</span>
+          <span className="promo-cta" onClick={() => navigate("/me")}>
+            내 연금 보러가기 ›
+          </span>
+          <span className="promo-close" onClick={() => setBannerOpen(false)}>
+            ✕
+          </span>
+        </div>
+      )}
+
+      {/* ── Market Overview ── */}
+      <MarketOverview products={products} />
+
+      {/* ── Tabs ── */}
+      <div className="mt-2">
+        <TabNav value={tab} onChange={setTab} />
+      </div>
+
+      {/* ── Filter row ── */}
+      <div className="flex items-center flex-wrap gap-3">
+        {/* Region toggle group */}
+        <div className="toggle-group">
+          <button
+            className={`toggle-btn${region === "all" ? " active" : ""}`}
+            onClick={() => setRegion("all")}
+          >
+            전체
+          </button>
+          <button
+            className={`toggle-btn${region === "kr" ? " active" : ""}`}
+            onClick={() => setRegion("kr")}
+          >
+            국내
+          </button>
+          <button
+            className={`toggle-btn${region === "global" ? " active" : ""}`}
+            onClick={() => setRegion("global")}
+          >
+            해외
+          </button>
+        </div>
+
+        <div className="flex gap-2 items-center flex-wrap">
+          {tab === "realtime" &&
+            SORT_CHIPS.map((c) => (
+              <button
+                key={c.key}
+                onClick={() => setSortBy(c.key)}
+                className={`chip-sm${sortBy === c.key ? " active" : ""}`}
+              >
+                {c.label}
+              </button>
+            ))}
+          {tab === "category" &&
+            CATEGORY_CHIPS.map((c) => (
+              <button
+                key={c.key}
+                onClick={() => setCategoryF(c.key)}
+                className={`chip-sm${categoryF === c.key ? " active" : ""}`}
+              >
+                {c.label}
+              </button>
+            ))}
+          {tab === "risk" &&
+            RISK_CHIPS.map((c) => (
+              <button
+                key={c.key}
+                onClick={() => setRiskF(c.key)}
+                className={`chip-sm${riskF === c.key ? " active" : ""}`}
+              >
+                {c.label}
+              </button>
+            ))}
+        </div>
+
+        {/* Right side toggle */}
+        <div className="ml-auto flex items-center gap-3">
+          <label className="flex items-center gap-2 text-[13px] font-semibold text-toss-text-secondary cursor-pointer">
+            <input
+              type="checkbox"
+              checked={hideHighRisk}
+              onChange={(e) => setHideHighRisk(e.target.checked)}
+              className="w-4 h-4 accent-toss-blue"
+            />
+            <span className="flex items-center gap-1">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10"/></svg>
+              투자위험 펀드 숨기기
+            </span>
+          </label>
         </div>
       </div>
 
-      {/* 카테고리 칩 */}
-      <div className="flex gap-2 overflow-x-auto pb-4 scrollbar-none">
-        {CHIPS.map((c) => (
-          <button
-            key={c.value}
-            onClick={() => setCategory(c.value)}
-            className={`chip${category === c.value ? " active" : ""}`}
-          >
-            {c.label}
-          </button>
-        ))}
-      </div>
-
-      {/* 메인 그리드: 좌측 큰 테이블 + 우측 사이드 */}
-      <div className="grid grid-cols-12 gap-6 mt-6">
-        {/* 좌측: 종목 테이블 */}
-        <div className="col-span-12 lg:col-span-8">
+      {/* ── 3-column body ── */}
+      <div className="grid grid-cols-12 gap-4 mt-1">
+        {/* Left: ranked fund list */}
+        <div className="col-span-12 lg:col-span-5">
           <div className="card overflow-hidden">
-            <div className="px-5 py-4 flex items-center justify-between border-b border-toss-border">
-              <h2 className="section-title">
-                {category === "all" ? "전체 상품" : CATEGORY_LABEL[category as Category]}
-                <span className="text-toss-text-tertiary font-medium ml-2 text-[14px]">
-                  {sorted.length}개
-                </span>
-              </h2>
+            <div className="px-4 py-3 flex items-center justify-between border-b border-toss-border">
+              <div className="flex items-center gap-2 text-[12px] text-toss-text-tertiary">
+                <span>순위 · 어제 16:00 기준</span>
+              </div>
+              <div className="text-[12px] text-toss-text-tertiary tabular-nums">
+                {sorted.length}개
+              </div>
             </div>
-            <div className="overflow-x-auto">
-              <table className="stock-table">
-                <thead>
-                  <tr>
-                    <th style={{ width: 40 }}>#</th>
-                    <th onClick={() => handleSort("name")} className="cursor-pointer">상품명</th>
-                    <th className="num cursor-pointer" onClick={() => handleSort("return_1y")}>
-                      1년 수익률 {sortBy === "return_1y" ? (sortDesc ? "↓" : "↑") : ""}
-                    </th>
-                    <th className="num cursor-pointer" onClick={() => handleSort("return_3y")}>
-                      3년
-                    </th>
-                    <th className="num cursor-pointer" onClick={() => handleSort("expense_ratio")}>
-                      보수
-                    </th>
-                    <th className="num">카테고리</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {sorted.length === 0 ? (
-                    <tr><td colSpan={6} className="text-center py-12 text-toss-text-tertiary">상품이 없습니다</td></tr>
-                  ) : (
-                    sorted.map((p, idx) => (
-                      <tr key={p.id} onClick={() => navigate(`/s/${p.id}`)}>
-                        <td className="text-toss-text-tertiary text-[13px]">{idx + 1}</td>
-                        <td>
-                          <p className="font-semibold text-toss-text-primary leading-tight">
-                            {p.nickname || p.name}
-                          </p>
-                          {p.nickname && p.name !== p.nickname && (
-                            <p className="text-[12px] text-toss-text-tertiary mt-0.5 truncate max-w-md">
-                              {p.name}
-                            </p>
-                          )}
-                        </td>
-                        <td className={`num font-bold ${colorForChange(p.return_1y)}`}>
-                          {p.return_1y != null ? formatPercent(p.return_1y) : "—"}
-                        </td>
-                        <td className={`num ${colorForChange(p.return_3y)}`}>
-                          {p.return_3y != null ? formatPercent(p.return_3y) : "—"}
-                        </td>
-                        <td className="num text-toss-text-secondary">
-                          {p.expense_ratio != null ? `${p.expense_ratio.toFixed(2)}%` : "—"}
-                        </td>
-                        <td className="num">
-                          <span className="badge-gray">{CATEGORY_LABEL[p.category]}</span>
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
+
+            {/* Column header */}
+            <div
+              className="grid items-center gap-3 px-3 h-9 text-[11px] font-medium text-toss-text-tertiary border-b border-toss-divider"
+              style={{ gridTemplateColumns: "24px 24px 36px 1fr 90px 80px" }}
+            >
+              <div></div>
+              <div>#</div>
+              <div></div>
+              <div>펀드명</div>
+              <div className="text-right">
+                {SORT_CHIPS.find((c) => c.key === sortBy)?.label}
+              </div>
+              <div className="text-right">순자산</div>
+            </div>
+
+            {/* Rows */}
+            <div className="max-h-[640px] overflow-y-auto">
+              {sorted.length === 0 ? (
+                <div className="py-12 text-center text-[13px] text-toss-text-tertiary">
+                  조건에 맞는 펀드가 없어요
+                </div>
+              ) : (
+                sorted.slice(0, 60).map((p, idx) => {
+                  const sel = p.id === selectedId;
+                  const liked = watchIds.includes(p.id);
+                  const sortVal = (p as any)[sortBy] as number | undefined;
+                  const initial =
+                    (p.nickname ?? p.name).trim().charAt(0) || "?";
+                  const cleanName = (p.nickname ?? p.name).replace(/\[.*$/, "").trim();
+                  return (
+                    <div
+                      key={p.id}
+                      onClick={() => setSelectedId(p.id)}
+                      className={`fund-row${sel ? " selected" : ""}`}
+                    >
+                      <span
+                        onClick={(e) => handleHeart(e, p.id)}
+                        className="cursor-pointer"
+                      >
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill={liked ? "#F04452" : "none"} stroke={liked ? "#F04452" : "#B0B8C1"} strokeWidth="2">
+                          <path d="M12 21s-7-4.35-9.5-9.5C1 8 3.5 4 7.5 4c2 0 3.5 1 4.5 2.5C13 5 14.5 4 16.5 4 20.5 4 23 8 21.5 11.5 19 16.65 12 21 12 21z" />
+                        </svg>
+                      </span>
+                      <span className="text-[13px] text-toss-text-tertiary font-semibold tabular-nums">
+                        {idx + 1}
+                      </span>
+                      <div
+                        className={`fund-logo ${CAT_COLOR[p.category] ?? "bg-toss-text-tertiary"}`}
+                      >
+                        {initial}
+                      </div>
+                      <div className="min-w-0">
+                        <div className="text-[14px] font-semibold text-toss-text-primary truncate">
+                          {cleanName}
+                        </div>
+                        <div className="text-[11px] text-toss-text-tertiary truncate">
+                          {CATEGORY_LABEL[p.category]}
+                          {p.risk_level && ` · ${p.risk_level}`}
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div
+                          className={`text-[14px] font-bold tabular-nums ${
+                            sortBy.startsWith("return")
+                              ? colorForChange(sortVal as number | null)
+                              : "text-toss-text-primary"
+                          }`}
+                        >
+                          {sortVal != null
+                            ? sortBy === "expense_ratio"
+                              ? `${(sortVal as number).toFixed(2)}%`
+                              : sortBy === "aum"
+                              ? `${(sortVal as number).toLocaleString()}억`
+                              : formatPercent(sortVal as number, 2)
+                            : "—"}
+                        </div>
+                      </div>
+                      <div className="text-right text-[12px] text-toss-text-secondary tabular-nums">
+                        {p.aum != null ? `${p.aum.toLocaleString()}억` : "—"}
+                      </div>
+                    </div>
+                  );
+                })
+              )}
             </div>
           </div>
         </div>
 
-        {/* 우측 사이드 */}
-        <div className="col-span-12 lg:col-span-4 space-y-6">
-          <SidePanel title="1년 수익률 TOP 3" items={featured} navigate={navigate} highlight />
-          <SidePanel title="TDF 인기 5" items={tdfTop} navigate={navigate} />
-          <SidePanel title="채권형 TOP 5" items={safeBondTop} navigate={navigate} />
+        {/* Middle: selected fund detail */}
+        <div className="col-span-12 lg:col-span-4">
+          <FundDetailPreview product={selected} />
         </div>
-      </div>
-    </div>
-  );
-}
 
-function SidePanel({
-  title,
-  items,
-  navigate,
-  highlight,
-}: {
-  title: string;
-  items: ProductSummary[];
-  navigate: (path: string) => void;
-  highlight?: boolean;
-}) {
-  return (
-    <div className="card overflow-hidden">
-      <div className="px-5 py-4 border-b border-toss-border">
-        <h3 className="text-[15px] font-bold text-toss-text-primary">{title}</h3>
-      </div>
-      <div className="divide-y divide-toss-divider">
-        {items.length === 0 ? (
-          <div className="px-5 py-6 text-center text-[13px] text-toss-text-tertiary">데이터 없음</div>
-        ) : (
-          items.map((p, idx) => (
-            <button
-              key={p.id}
-              onClick={() => navigate(`/s/${p.id}`)}
-              className="w-full text-left px-5 py-3 flex items-center gap-3 hover:bg-toss-divider/50 transition-colors"
-            >
-              <span className={`text-[13px] font-bold w-5 ${highlight && idx < 3 ? "text-toss-blue" : "text-toss-text-tertiary"}`}>
-                {idx + 1}
-              </span>
-              <div className="flex-1 min-w-0">
-                <p className="text-[13px] font-semibold text-toss-text-primary truncate">
-                  {p.nickname || p.name}
-                </p>
-                <p className="text-[11px] text-toss-text-tertiary mt-0.5">
-                  {CATEGORY_LABEL[p.category]}
-                </p>
-              </div>
-              {p.return_1y != null && (
-                <span className={`text-[13px] font-bold tabular-nums ${colorForChange(p.return_1y)}`}>
-                  {formatPercent(p.return_1y)}
-                </span>
-              )}
-            </button>
-          ))
-        )}
+        {/* Right: watchlist sidebar */}
+        <div className="col-span-12 lg:col-span-3">
+          <WatchlistPanel
+            products={products}
+            selectedId={selectedId}
+            onSelect={setSelectedId}
+          />
+        </div>
       </div>
     </div>
   );
