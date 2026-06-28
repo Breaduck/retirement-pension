@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:www.shinhansec.com)",
+      "WebSearch",
+      "WebFetch(domain:m.shinhansec.com)",
+      "WebFetch(domain:file.shinhansec.com)",
+      "PowerShell(Get-NetTCPConnection *)",
+      "Bash(findstr /v \"node_modules dist src public scripts data\")",
+      "PowerShell(Get-Command *)",
+      "PowerShell(winget *)",
+      "PowerShell(python --version 2>&1; node --version 2>&1)",
+      "PowerShell(pip install *)",
+      "Bash(sed -n '25,30p' \"C:\\\\Users\\\\hiyoo\\\\코딩\\\\money\\\\src\\\\components\\\\PriceChart.tsx\")",
+      "Bash(sed -n '3,11p' \"C:\\\\Users\\\\hiyoo\\\\코딩\\\\money\\\\src\\\\components\\\\MoneyOutcome.tsx\")",
+      "Bash(git init *)"
+    ]
+  }
+}

@@ -1,0 +1,165 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+  body {
+    @apply bg-white text-toss-text-primary font-sans antialiased;
+    font-feature-settings: "ss01", "tnum";
+    -webkit-tap-highlight-color: transparent;
+  }
+  * {
+    -webkit-font-smoothing: antialiased;
+  }
+}
+
+@layer components {
+  /* ── 카드 ── */
+  .card {
+    @apply bg-white rounded-2xl;
+  }
+  .card-section {
+    @apply bg-white rounded-2xl px-5 py-5;
+  }
+
+  /* ── 숫자 히어로 ── */
+  .hero-number {
+    @apply tabular-nums font-bold tracking-tight;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ── 등락률 색상 (한국식: 상승=빨강, 하락=파랑) ── */
+  .delta-up {
+    @apply text-toss-red font-semibold;
+  }
+  .delta-down {
+    @apply text-[#2468F6] font-semibold;
+  }
+  .delta-flat {
+    @apply text-toss-text-tertiary font-semibold;
+  }
+
+  /* ── 하단 탭바 ── */
+  .tab-bar {
+    @apply fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-toss-border;
+    @apply flex items-stretch;
+    height: 56px;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .tab-item {
+    @apply flex-1 flex flex-col items-center justify-center gap-0.5;
+    @apply text-[10px] font-medium text-toss-text-tertiary;
+    @apply transition-colors duration-100;
+    @apply cursor-pointer select-none;
+  }
+  .tab-item.active {
+    @apply text-toss-blue;
+  }
+  .tab-item svg {
+    @apply w-5 h-5;
+  }
+
+  /* ── 페이지 헤더 ── */
+  .page-header {
+    @apply sticky top-0 z-30 bg-white;
+    @apply flex items-center h-[52px] px-5;
+    @apply border-b border-toss-border/50;
+  }
+  .page-header-title {
+    @apply text-[17px] font-bold text-toss-text-primary;
+  }
+
+  /* ── 섹션 헤더 ── */
+  .section-header {
+    @apply flex items-center justify-between px-5 pt-6 pb-2;
+  }
+  .section-title {
+    @apply text-[17px] font-bold text-toss-text-primary;
+  }
+  .section-more {
+    @apply text-[13px] font-medium text-toss-text-tertiary;
+  }
+
+  /* ── 카테고리 칩 ── */
+  .chip {
+    @apply inline-flex items-center px-4 py-2 rounded-full;
+    @apply text-[14px] font-medium whitespace-nowrap;
+    @apply bg-toss-divider text-toss-text-secondary;
+    @apply cursor-pointer select-none transition-colors duration-100;
+  }
+  .chip.active {
+    @apply bg-toss-text-primary text-white;
+  }
+
+  /* ── 하단 액션바 ── */
+  .action-bar {
+    @apply fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-toss-border;
+    @apply flex items-center gap-3 px-5 py-3;
+    padding-bottom: max(12px, env(safe-area-inset-bottom));
+  }
+  .action-bar-watch {
+    @apply flex-none w-12 h-12 rounded-2xl bg-toss-divider;
+    @apply flex items-center justify-center;
+    @apply transition-colors duration-100;
+  }
+  .action-bar-buy {
+    @apply flex-1 h-12 rounded-2xl bg-toss-blue text-white;
+    @apply flex items-center justify-center;
+    @apply text-[15px] font-bold;
+    @apply transition-colors duration-100 active:opacity-80;
+  }
+
+  /* ── 종목 행 (홈 리스트) ── */
+  .stock-row {
+    @apply flex items-center gap-3 px-5 py-4 cursor-pointer;
+    @apply active:bg-toss-divider transition-colors duration-100;
+  }
+
+  /* ── 큰 종목 카드 (오늘 주목) ── */
+  .stock-card-big {
+    @apply flex flex-col gap-1 p-4 rounded-2xl bg-white;
+    @apply cursor-pointer active:opacity-80 transition-opacity duration-100;
+    min-width: 160px;
+  }
+
+  /* ── 빈 상태 ── */
+  .empty-state {
+    @apply flex flex-col items-center justify-center gap-3 py-20 px-8;
+    @apply text-center;
+  }
+
+  /* ── 구분선 ── */
+  .divider {
+    @apply h-2 bg-toss-divider;
+  }
+  .divider-line {
+    @apply h-px bg-toss-border mx-5;
+  }
+
+  /* ── 숫자 ── */
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ── 뱃지 ── */
+  .badge-green {
+    @apply inline-flex items-center px-2 py-0.5 rounded-full;
+    @apply text-[11px] font-semibold;
+    @apply bg-emerald-50 text-toss-green;
+  }
+  .badge-yellow {
+    @apply inline-flex items-center px-2 py-0.5 rounded-full;
+    @apply text-[11px] font-semibold;
+    @apply bg-amber-50 text-toss-yellow;
+  }
+  .badge-red {
+    @apply inline-flex items-center px-2 py-0.5 rounded-full;
+    @apply text-[11px] font-semibold;
+    @apply bg-rose-50 text-toss-red;
+  }
+}

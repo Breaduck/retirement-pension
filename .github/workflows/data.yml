@@ -1,0 +1,64 @@
+name: refresh-data
+
+on:
+  workflow_dispatch: {}
+  schedule:
+    # 평일 KST 18:00 = UTC 09:00
+    - cron: "0 9 * * 1-5"
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Install deps
+        working-directory: scripts
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Fetch ETF basics + prices (KRX)
+        working-directory: scripts
+        run: python fetch_etf_basics.py
+
+      - name: Fetch ETF holdings (best effort)
+        working-directory: scripts
+        continue-on-error: true
+        run: python fetch_etf_holdings.py
+
+      - name: Fetch TDF
+        working-directory: scripts
+        continue-on-error: true
+        run: python fetch_tdf.py
+
+      - name: Fetch news (best effort)
+        working-directory: scripts
+        continue-on-error: true
+        run: python fetch_news.py
+
+      - name: Build products.json
+        working-directory: scripts
+        run: python build_products_json.py
+
+      - name: Commit changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data public/data
+          if git diff --cached --quiet; then
+            echo "No data changes."
+          else
+            git commit -m "data: refresh $(date -u +%Y-%m-%dT%H:%MZ)"
+            git push
+          fi

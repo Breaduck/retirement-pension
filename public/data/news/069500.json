@@ -1,0 +1,17 @@
+{
+  "id": "069500",
+  "items": [
+    {
+      "title": "(샘플) 코스피 외국인 매수 전환에 강보합 마감",
+      "publisher": "샘플뉴스",
+      "url": "https://example.com/1",
+      "published_at": "2026-06-25T15:30:00+09:00"
+    },
+    {
+      "title": "(샘플) 반도체 업황 회복에 KODEX 200 자금 유입",
+      "publisher": "샘플경제",
+      "url": "https://example.com/2",
+      "published_at": "2026-06-24T10:11:00+09:00"
+    }
+  ]
+}
