@@ -3,7 +3,7 @@ import react from "@vitejs/plugin-react";
 import path from "node:path";
 
 export default defineConfig({
-  base: "/retirement-pension/",
+  base: process.env.CF_PAGES ? "/" : "/retirement-pension/",
   plugins: [react()],
   resolve: {
     alias: {
