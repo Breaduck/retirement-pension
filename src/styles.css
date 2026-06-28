@@ -11,7 +11,6 @@
   body {
     @apply bg-white text-toss-text-primary font-sans antialiased;
     font-feature-settings: "ss01", "tnum";
-    -webkit-tap-highlight-color: transparent;
   }
   * {
     -webkit-font-smoothing: antialiased;
@@ -19,12 +18,20 @@
 }
 
 @layer components {
+  /* ── 컨테이너 ── */
+  .container-wide {
+    @apply max-w-[1200px] mx-auto px-8;
+  }
+  .container-narrow {
+    @apply max-w-[960px] mx-auto px-8;
+  }
+
   /* ── 카드 ── */
   .card {
-    @apply bg-white rounded-2xl;
+    @apply bg-white rounded-2xl border border-toss-border;
   }
-  .card-section {
-    @apply bg-white rounded-2xl px-5 py-5;
+  .card-flat {
+    @apply bg-toss-divider rounded-2xl;
   }
 
   /* ── 숫자 히어로 ── */
@@ -33,56 +40,71 @@
     font-variant-numeric: tabular-nums;
   }
 
-  /* ── 등락률 색상 (한국식: 상승=빨강, 하락=파랑) ── */
-  .delta-up {
-    @apply text-toss-red font-semibold;
+  /* ── 등락 색상 (한국식) ── */
+  .delta-up { @apply text-toss-red font-semibold; }
+  .delta-down { @apply text-[#2468F6] font-semibold; }
+  .delta-flat { @apply text-toss-text-tertiary font-semibold; }
+
+  /* ── 글로벌 상단 헤더 ── */
+  .top-nav {
+    @apply sticky top-0 z-40 bg-white border-b border-toss-border;
+    height: 64px;
   }
-  .delta-down {
-    @apply text-[#2468F6] font-semibold;
+  .top-nav-inner {
+    @apply h-full flex items-center gap-8 max-w-[1400px] mx-auto px-8;
   }
-  .delta-flat {
-    @apply text-toss-text-tertiary font-semibold;
+  .top-nav-logo {
+    @apply text-[20px] font-bold text-toss-text-primary tracking-tight cursor-pointer;
+  }
+  .top-nav-link {
+    @apply text-[15px] font-semibold text-toss-text-secondary;
+    @apply hover:text-toss-text-primary transition-colors;
+  }
+  .top-nav-link.active {
+    @apply text-toss-text-primary;
   }
 
-  /* ── 하단 탭바 ── */
-  .tab-bar {
-    @apply fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-toss-border;
-    @apply flex items-stretch;
-    height: 56px;
-    padding-bottom: env(safe-area-inset-bottom);
+  /* ── 검색바 ── */
+  .search-bar {
+    @apply flex items-center gap-2 h-10 px-4 rounded-xl bg-toss-divider;
+    @apply text-[14px] text-toss-text-secondary;
+    @apply hover:bg-toss-border/40 transition-colors cursor-text;
+    min-width: 280px;
   }
-  .tab-item {
-    @apply flex-1 flex flex-col items-center justify-center gap-0.5;
-    @apply text-[10px] font-medium text-toss-text-tertiary;
-    @apply transition-colors duration-100;
-    @apply cursor-pointer select-none;
+  .search-input {
+    @apply flex-1 bg-transparent outline-none text-toss-text-primary placeholder:text-toss-text-tertiary;
   }
-  .tab-item.active {
-    @apply text-toss-blue;
+
+  /* ── 사이드 메뉴 ── */
+  .side-menu {
+    @apply flex flex-col gap-1 py-2;
   }
-  .tab-item svg {
-    @apply w-5 h-5;
+  .side-menu-item {
+    @apply flex items-center gap-3 px-4 h-11 rounded-xl;
+    @apply text-[14px] font-medium text-toss-text-secondary cursor-pointer;
+    @apply hover:bg-toss-divider transition-colors;
+  }
+  .side-menu-item.active {
+    @apply bg-toss-blue-light text-toss-blue font-semibold;
+  }
+  .side-menu-section {
+    @apply text-[11px] font-semibold text-toss-text-tertiary uppercase tracking-wider px-4 pt-4 pb-1;
   }
 
   /* ── 페이지 헤더 ── */
-  .page-header {
-    @apply sticky top-0 z-30 bg-white;
-    @apply flex items-center h-[52px] px-5;
-    @apply border-b border-toss-border/50;
+  .page-title {
+    @apply text-[26px] font-bold text-toss-text-primary tracking-tight;
   }
-  .page-header-title {
-    @apply text-[17px] font-bold text-toss-text-primary;
+  .page-subtitle {
+    @apply text-[14px] text-toss-text-tertiary mt-1;
   }
 
   /* ── 섹션 헤더 ── */
-  .section-header {
-    @apply flex items-center justify-between px-5 pt-6 pb-2;
-  }
   .section-title {
-    @apply text-[17px] font-bold text-toss-text-primary;
+    @apply text-[18px] font-bold text-toss-text-primary tracking-tight;
   }
-  .section-more {
-    @apply text-[13px] font-medium text-toss-text-tertiary;
+  .section-sub {
+    @apply text-[13px] text-toss-text-tertiary mt-0.5;
   }
 
   /* ── 카테고리 칩 ── */
@@ -90,55 +112,61 @@
     @apply inline-flex items-center px-4 py-2 rounded-full;
     @apply text-[14px] font-medium whitespace-nowrap;
     @apply bg-toss-divider text-toss-text-secondary;
-    @apply cursor-pointer select-none transition-colors duration-100;
+    @apply cursor-pointer select-none transition-colors;
+    @apply hover:bg-toss-border/40;
   }
   .chip.active {
     @apply bg-toss-text-primary text-white;
+    @apply hover:bg-toss-text-primary;
   }
 
-  /* ── 하단 액션바 ── */
-  .action-bar {
-    @apply fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-toss-border;
-    @apply flex items-center gap-3 px-5 py-3;
-    padding-bottom: max(12px, env(safe-area-inset-bottom));
+  /* ── 테이블 ── */
+  .stock-table {
+    @apply w-full;
   }
-  .action-bar-watch {
-    @apply flex-none w-12 h-12 rounded-2xl bg-toss-divider;
-    @apply flex items-center justify-center;
-    @apply transition-colors duration-100;
+  .stock-table thead th {
+    @apply text-[12px] font-medium text-toss-text-tertiary text-left py-3 px-4;
+    @apply border-b border-toss-border;
   }
-  .action-bar-buy {
-    @apply flex-1 h-12 rounded-2xl bg-toss-blue text-white;
-    @apply flex items-center justify-center;
-    @apply text-[15px] font-bold;
-    @apply transition-colors duration-100 active:opacity-80;
+  .stock-table thead th.num {
+    @apply text-right;
   }
-
-  /* ── 종목 행 (홈 리스트) ── */
-  .stock-row {
-    @apply flex items-center gap-3 px-5 py-4 cursor-pointer;
-    @apply active:bg-toss-divider transition-colors duration-100;
+  .stock-table tbody td {
+    @apply py-3.5 px-4 text-[14px] text-toss-text-primary;
+    @apply border-b border-toss-divider;
+  }
+  .stock-table tbody td.num {
+    @apply text-right tabular-nums;
+  }
+  .stock-table tbody tr {
+    @apply cursor-pointer hover:bg-toss-divider/50 transition-colors;
   }
 
-  /* ── 큰 종목 카드 (오늘 주목) ── */
-  .stock-card-big {
-    @apply flex flex-col gap-1 p-4 rounded-2xl bg-white;
-    @apply cursor-pointer active:opacity-80 transition-opacity duration-100;
-    min-width: 160px;
+  /* ── 버튼 ── */
+  .btn-primary {
+    @apply inline-flex items-center justify-center h-12 px-6 rounded-xl;
+    @apply bg-toss-blue text-white text-[15px] font-bold;
+    @apply hover:bg-toss-blue-hover transition-colors;
+  }
+  .btn-secondary {
+    @apply inline-flex items-center justify-center h-12 px-6 rounded-xl;
+    @apply bg-toss-divider text-toss-text-primary text-[15px] font-bold;
+    @apply hover:bg-toss-border/40 transition-colors;
+  }
+  .btn-icon {
+    @apply inline-flex items-center justify-center w-10 h-10 rounded-xl;
+    @apply bg-toss-divider text-toss-text-secondary;
+    @apply hover:bg-toss-border/40 transition-colors;
   }
 
   /* ── 빈 상태 ── */
   .empty-state {
-    @apply flex flex-col items-center justify-center gap-3 py-20 px-8;
-    @apply text-center;
+    @apply flex flex-col items-center justify-center gap-3 py-24 px-8 text-center;
   }
 
   /* ── 구분선 ── */
-  .divider {
-    @apply h-2 bg-toss-divider;
-  }
   .divider-line {
-    @apply h-px bg-toss-border mx-5;
+    @apply h-px bg-toss-border;
   }
 
   /* ── 숫자 ── */
@@ -148,18 +176,23 @@
 
   /* ── 뱃지 ── */
   .badge-green {
-    @apply inline-flex items-center px-2 py-0.5 rounded-full;
-    @apply text-[11px] font-semibold;
-    @apply bg-emerald-50 text-toss-green;
+    @apply inline-flex items-center px-2 py-0.5 rounded-md;
+    @apply text-[11px] font-semibold bg-emerald-50 text-toss-green;
   }
   .badge-yellow {
-    @apply inline-flex items-center px-2 py-0.5 rounded-full;
-    @apply text-[11px] font-semibold;
-    @apply bg-amber-50 text-toss-yellow;
+    @apply inline-flex items-center px-2 py-0.5 rounded-md;
+    @apply text-[11px] font-semibold bg-amber-50 text-toss-yellow;
   }
   .badge-red {
-    @apply inline-flex items-center px-2 py-0.5 rounded-full;
-    @apply text-[11px] font-semibold;
-    @apply bg-rose-50 text-toss-red;
+    @apply inline-flex items-center px-2 py-0.5 rounded-md;
+    @apply text-[11px] font-semibold bg-rose-50 text-toss-red;
   }
+  .badge-gray {
+    @apply inline-flex items-center px-2 py-0.5 rounded-md;
+    @apply text-[11px] font-semibold bg-toss-divider text-toss-text-secondary;
+  }
+
+  /* 스크롤바 숨김 */
+  .scrollbar-none::-webkit-scrollbar { display: none; }
+  .scrollbar-none { scrollbar-width: none; }
 }

@@ -18,3 +18,10 @@ venv/
 
 # Logs
 *.log
+
+# 작업용 원본 자료 (대용량, git 불필요)
+*.pdf
+*.png
+*.jpg
+*.jpeg
+.tmp_chunks/

@@ -13,7 +13,8 @@
       "PowerShell(pip install *)",
       "Bash(sed -n '25,30p' \"C:\\\\Users\\\\hiyoo\\\\코딩\\\\money\\\\src\\\\components\\\\PriceChart.tsx\")",
       "Bash(sed -n '3,11p' \"C:\\\\Users\\\\hiyoo\\\\코딩\\\\money\\\\src\\\\components\\\\MoneyOutcome.tsx\")",
-      "Bash(git init *)"
+      "Bash(git init *)",
+      "Bash(git branch *)"
     ]
   }
 }

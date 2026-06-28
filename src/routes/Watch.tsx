@@ -3,8 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { loadProducts, ProductSummary, CATEGORY_LABEL } from "../lib/data";
 import { getWatchlist, removeFromWatchlist } from "../lib/watchlist";
 import { formatPercent, colorForChange } from "../lib/format";
-import EmptyState from "../components/EmptyState";
-import SectionHeader from "../components/SectionHeader";
 
 export default function Watch() {
   const [products, setProducts] = useState<ProductSummary[]>([]);
@@ -29,90 +27,86 @@ export default function Watch() {
   };
 
   return (
-    <div className="min-h-screen bg-white">
-      <div className="page-header">
-        <h1 className="page-header-title flex-1">관심</h1>
-        {watched.length > 0 && (
-          <span className="text-[13px] text-toss-text-tertiary">{watched.length}개</span>
-        )}
+    <div>
+      <div className="flex items-end justify-between mb-6">
+        <div>
+          <h1 className="page-title">관심 종목</h1>
+          <p className="page-subtitle">
+            별표로 저장한 상품을 모아봤어요 · {watched.length}개
+          </p>
+        </div>
       </div>
 
       {watched.length === 0 ? (
-        <EmptyState
-          icon="⭐"
-          title="아직 관심 종목이 없어요"
-          description="상품 상세에서 별 아이콘을 누르면 여기 모아볼 수 있어요"
-          ctaLabel="상품 둘러보기"
-          ctaTo="/"
-        />
+        <div className="card">
+          <div className="empty-state">
+            <span className="text-5xl">⭐</span>
+            <p className="text-[18px] font-bold text-toss-text-primary">아직 관심 종목이 없어요</p>
+            <p className="text-[14px] text-toss-text-tertiary">
+              상품 상세에서 별 아이콘을 누르면 여기 모아볼 수 있어요
+            </p>
+            <button onClick={() => navigate("/")} className="btn-primary mt-2">상품 둘러보기</button>
+          </div>
+        </div>
       ) : (
-        <>
-          <SectionHeader title="관심 종목" />
-          {watched.map((p) => (
-            <WatchRow
-              key={p.id}
-              product={p}
-              onClick={() => navigate(`/s/${p.id}`)}
-              onRemove={(e) => handleRemove(e, p.id)}
-            />
-          ))}
-          <div className="h-8" />
-        </>
+        <div className="card overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="stock-table">
+              <thead>
+                <tr>
+                  <th style={{ width: 40 }}>#</th>
+                  <th>상품명</th>
+                  <th className="num">1년</th>
+                  <th className="num">3년</th>
+                  <th className="num">보수</th>
+                  <th className="num">카테고리</th>
+                  <th style={{ width: 60 }}></th>
+                </tr>
+              </thead>
+              <tbody>
+                {watched.map((p, idx) => (
+                  <tr key={p.id} onClick={() => navigate(`/s/${p.id}`)}>
+                    <td className="text-toss-text-tertiary text-[13px]">{idx + 1}</td>
+                    <td>
+                      <p className="font-semibold text-toss-text-primary leading-tight">
+                        {p.nickname || p.name}
+                      </p>
+                      {p.nickname && p.name !== p.nickname && (
+                        <p className="text-[12px] text-toss-text-tertiary mt-0.5 truncate max-w-md">
+                          {p.name}
+                        </p>
+                      )}
+                    </td>
+                    <td className={`num font-bold ${colorForChange(p.return_1y)}`}>
+                      {p.return_1y != null ? formatPercent(p.return_1y) : "—"}
+                    </td>
+                    <td className={`num ${colorForChange(p.return_3y)}`}>
+                      {p.return_3y != null ? formatPercent(p.return_3y) : "—"}
+                    </td>
+                    <td className="num text-toss-text-secondary">
+                      {p.expense_ratio != null ? `${p.expense_ratio.toFixed(2)}%` : "—"}
+                    </td>
+                    <td className="num">
+                      <span className="badge-gray">{CATEGORY_LABEL[p.category]}</span>
+                    </td>
+                    <td>
+                      <button
+                        onClick={(e) => handleRemove(e, p.id)}
+                        className="text-toss-text-tertiary hover:text-toss-red transition-colors p-1"
+                        aria-label="관심 해제"
+                      >
+                        <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2}>
+                          <path d="M18 6L6 18M6 6l12 12" strokeLinecap="round" />
+                        </svg>
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
       )}
-    </div>
-  );
-}
-
-function WatchRow({
-  product: p,
-  onClick,
-  onRemove,
-}: {
-  product: ProductSummary;
-  onClick: () => void;
-  onRemove: (e: React.MouseEvent) => void;
-}) {
-  const r1y = p.return_1y;
-  const cls = colorForChange(r1y);
-
-  return (
-    <div onClick={onClick} className="stock-row">
-      <span
-        className="w-2 h-2 rounded-full flex-none mt-0.5"
-        style={{
-          background:
-            p.timing?.signal === "green"
-              ? "#0EBD8C"
-              : p.timing?.signal === "red"
-              ? "#F04452"
-              : "#E5E8EB",
-        }}
-      />
-      <div className="flex-1 min-w-0">
-        <p className="text-[15px] font-semibold text-toss-text-primary truncate">
-          {p.nickname || p.name}
-        </p>
-        <p className="text-[12px] text-toss-text-tertiary mt-0.5">{CATEGORY_LABEL[p.category]}</p>
-      </div>
-      <div className="text-right flex-none mr-3">
-        {r1y != null ? (
-          <>
-            <p className={`text-[15px] font-bold tabular-nums ${cls}`}>{formatPercent(r1y)}</p>
-            <p className="text-[11px] text-toss-text-tertiary mt-0.5">1년</p>
-          </>
-        ) : (
-          <p className="text-[15px] text-toss-text-tertiary">—</p>
-        )}
-      </div>
-      <button
-        onClick={onRemove}
-        className="p-1 text-toss-text-tertiary"
-        aria-label="관심 해제"
-      >
-        <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.8}>
-          <path d="M18 6L6 18M6 6l12 12" strokeLinecap="round" />
-        </svg>
-      </button>
     </div>
   );
 }
