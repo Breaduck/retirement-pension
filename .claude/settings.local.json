@@ -14,7 +14,12 @@
       "Bash(sed -n '25,30p' \"C:\\\\Users\\\\hiyoo\\\\코딩\\\\money\\\\src\\\\components\\\\PriceChart.tsx\")",
       "Bash(sed -n '3,11p' \"C:\\\\Users\\\\hiyoo\\\\코딩\\\\money\\\\src\\\\components\\\\MoneyOutcome.tsx\")",
       "Bash(git init *)",
-      "Bash(git branch *)"
+      "Bash(git branch *)",
+      "PowerShell(python -m pip install pdfplumber 2>&1 | Select-Object -Last 5)",
+      "Bash(python scripts/extract_pdf.py)",
+      "PowerShell(python -m pip install pymupdf --quiet 2>&1 | Select-Object -Last 2)",
+      "Bash(python scripts/pdf_to_png.py)",
+      "PowerShell(Add-Type -AssemblyName System.Drawing; $img = [System.Drawing.Image]::FromFile\\(\"C:\\\\Users\\\\hiyoo\\\\코딩\\\\money\\\\.tmp_pdf_pages\\\\fund_p01.png\"\\); Write-Output \\(\"{0}x{1}\" -f $img.Width, $img.Height\\); $img.Dispose\\(\\))"
     ]
   }
 }
